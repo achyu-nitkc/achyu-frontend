@@ -2,8 +2,48 @@ import {FaGoogle, FaRegEnvelope} from "react-icons/fa";
 import Head from "next/head"
 import {MdLockOutline} from "react-icons/md";
 import Link from "next/link"
+import {useState} from "react";
+import {useRouter} from "next/router";
 
 export default function Login() {
+    const [formData,setFormData] = useState({
+        Email:"",
+        Password: "",
+    })
+    const router = useRouter()
+
+    const handleChange = (e) => {
+        const {name,value} = e.target
+        setFormData({
+            ...formData,
+            [name]: value,
+        })
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        try {
+            console.log(formData)
+            const response = await fetch("http://localhost:8080/login",{
+                method: "POST",
+                headers: {
+                    "Content-Type":"application/json"
+                },
+                body: JSON.stringify(formData)
+            })
+            if (response.ok) {
+                const jwt = await response.text()
+                const expires = new Date()
+                expires.setMonth(expires.getMonth()+3)
+                document.cookie = `token=${jwt};expires=${expires.toUTCString()};path=/login`
+                //router.push("#")
+            } else if (response.status == 401) {
+                console.log("login failed")
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     return (
         <div className={"flex flex-col items-center justify-center min-h-screen py-2"}>
@@ -29,15 +69,15 @@ export default function Login() {
                                 </a>
                             </div>
                             <p className={"text-gray-600 my-3"}>use your email account</p>
-                            <form className={"flex flex-col items-center"}>
+                            <form onSubmit={handleSubmit} className={"flex flex-col items-center"}>
                                 <div className={"bg-gray-100 w-64 p-2 flex items-center mb-3"}>
                                     <FaRegEnvelope className={"text-gray-400 mr-2"}/>
-                                    <input type={"email"} name={"email"} placeholder={"Email"}
+                                    <input type={"email"} name={"Email"} onChange={handleChange} placeholder={"Email"}
                                            required className={"bg-gray-100 outline-none text-sm flex-1"}/>
                                 </div>
                                 <div className={"bg-gray-100 w-64 p-2 flex items-center mb-3"}>
                                     <MdLockOutline className={"text-gray-400 mr-2"}/>
-                                    <input type={"password"} name={"password"}
+                                    <input type={"password"} name={"Password"} onChange={handleChange}
                                            placeholder={"Password"} required
                                            className={"bg-gray-100 outline-none text-sm flex-1"}/>
                                 </div>
