@@ -35,9 +35,9 @@ export default function Login() {
                 const jwt = await response.text()
                 const expires = new Date()
                 expires.setMonth(expires.getMonth()+3)
-                document.cookie = `token=${jwt};expires=${expires.toUTCString()};path=/login`
-                //router.push("#")
-            } else if (response.status == 401) {
+                document.cookie = `token=${jwt};expires=${expires.toUTCString()};path=/`
+                await router.push("/home")
+            } else if (response.status === 401) {
                 console.log("login failed")
             }
         } catch (error) {
@@ -92,7 +92,7 @@ export default function Login() {
                         <h2 className={"text-3xl font-bold mb-2"}>Get started!</h2>
                         <div className={"border-2 w-10 border-white inline-block mb-2"}></div>
                         <p className={"mb-2"}>Share your region state.</p>
-                        <Link href={"#"}
+                        <Link href={"/signup"}
                               className={"border-2 border-white rounded-full px-12 py-2 inline-block font-semibold hover:bg-white hover:text-blue-600"}>Sign
                             Up</Link>
                     </div>
