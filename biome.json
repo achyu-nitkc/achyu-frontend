@@ -2,16 +2,18 @@
 	"$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
 	"files": {
 		"include": [
-			"./**/*.js",
-			"./**/*.mjs",
-			"./**/*.cjs",
-			"./**/*.jsx",
-			"./**/*.ts",
-			"./**/*.mts",
-			"./**/*.cts",
-			"./**/*.tsx",
-			"./**/*.json"
-		]
+			"*.js",
+			"*.mjs",
+			"*.cjs",
+			"*.jsx",
+			"*.ts",
+			"*.mts",
+			"*.cts",
+			"*.tsx",
+			"*.json",
+            "*.css"
+		],
+        "ignore": ["package-lock.json"]
 	},
 	"vcs": {
 		"enabled": true,
