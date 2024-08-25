@@ -1,7 +1,15 @@
 {
   "name": "achyu-frontend",
   "version": "0.1.0",
-  "private": true,
+  "homepage": "https://github.com/achyu-nitkc/achyu-frontend",
+  "bugs": {
+    "url": "https://github.com/achyu-nitkc/achyu-frontend/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/achyu-nitkc/achyu-frontend.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -23,5 +31,6 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
-  }
+  },
+  "private": true
 }
