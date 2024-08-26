@@ -1,6 +1,12 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {Post} from "@/components/map";
+
+
+interface MapComponentProps {
+    markers: Post[]
+}
 
 export default function Home() {
   //Get Cookie
@@ -15,7 +21,6 @@ export default function Home() {
   //Get user's gps data
   const getLocation = useCallback(() => {
     if ("geolocation" in navigator) {
-      console.log("@getLocation");
       navigator.geolocation.getCurrentPosition(({ coords }) => {
         setLatitude(coords.latitude);
         setLongitude(coords.longitude);
@@ -28,22 +33,24 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       tokenCookie = getCookie("token");
-      console.log("tokenCookie : ", tokenCookie);
       if (tokenCookie === undefined) {
-        await router.push("/login");
+        await router.push("/login")
       }
-      getLocation();
-      await getData();
+      getLocation()
+      await getData()
     };
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   //gps data
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
 
   //jwt token
-  let tokenCookie: string | undefined;
+  let tokenCookie:string | undefined
+
+  //post data
+  const [posts,setPosts] = useState<Post[]>([])
 
   const getData = async () => {
     const jsonData = {
@@ -60,6 +67,11 @@ export default function Home() {
         body: JSON.stringify(jsonData),
       });
       //map pin
+
+      if(response.ok){
+        const tmpPosts:Post[] = await response.json()
+        setPosts(tmpPosts)
+      }
     } catch (error) {
       console.log(error);
     }
@@ -77,7 +89,7 @@ export default function Home() {
   );
 
   return (
-    <div>
+    <div className={"flex flex-col items-center justify-center min-h-screen py-2"}>
       {latitude !== null && longitude !== null ? (
         <p>
           Latitude @ {latitude} , Longitude @ {longitude}
@@ -85,7 +97,8 @@ export default function Home() {
       ) : (
         <p>Loading gps information...</p>
       )}
-      <MapComponent />
+      <MapComponent markers = {posts}>
+      </MapComponent>
     </div>
   );
 }
