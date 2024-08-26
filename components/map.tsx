@@ -47,13 +47,16 @@ const MapComponent:React.FC<MapComponentProps> = ({markers = []}) =>{
         url="https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png"
         minZoom={5}
       />
-        {markers.map((marker) => (
+        {(markers !== null) ? (
+            markers.map((marker) => (
             <Marker key = {marker.postId} position = {[marker.latitude, marker.longitude]}>
                 <Popup>
                     {marker.address}
                 </Popup>
             </Marker>
-        ))}
+        ))) : (
+            <div />
+        )}
     </MapContainer>
   );
 }
