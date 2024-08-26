@@ -80,15 +80,14 @@ export default function Verify() {
         <div className={"flex flex-col items-center justify-center min-h-screen py-2"}>
             <Head>
                 <title>Verify</title>
-                <link rel={"icon"} href={"/public/favicon.ico"}/>
             </Head>
             <main className={"flex flex-col items-center justify-center w-full flex-1 px-20 text-center"}>
                 <div className={"flex-col bg-white rounded-2xl shadow-2xl flex w-1/4 min-w-min max-w-4xl p-5"}>
                     <div className={"text-left font-bold"}>
-                        Achy<span className={"text-blue-600"}>U</span>
+                        Achy<span className={"text-sky-600"}>U</span>
                     </div>
                     <div className={"py-10"}>
-                        <h2 className={"text-3xl font-bold text-blue-600"}>
+                        <h2 className={"text-3xl font-bold text-sky-600"}>
                             Verify your account
                         </h2>
                         <div className={"border-2 w-10 border-white inline-block mb-2"}></div>
@@ -101,7 +100,7 @@ export default function Verify() {
                                     key={index}
                                     type="text"
                                     maxLength="1"
-                                    className="w-10 h-10 rounded-lg border-2 m-0.5 border-blue-600 text-center text-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    className="w-10 h-10 rounded-lg border-2 m-0.5 border-sky-600 text-center text-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
                                     ref={(el) => (inputRefs.current[index] = el)}
                                     onChange={(e) => handleChange(e, index)}
                                     onKeyDown={(e) => handleKeyDown(e, index)}
@@ -112,7 +111,7 @@ export default function Verify() {
                         <div className={"border-2 w-10 border-white inline-block mb-2"}></div>
                         <button
                             type={"submit"}
-                            className={"border-2 border-blue-600 rounded-full text-blue-600 px-12 py-2 inline-block font-semibold hover:text-white hover:bg-blue-600"}>
+                            className={"border-2 border-sky-600 rounded-full text-sky-600 px-12 py-2 inline-block font-semibold hover:text-white hover:bg-sky-600"}>
                             confirm
                         </button>
                     </form>
