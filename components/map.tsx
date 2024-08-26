@@ -1,7 +1,34 @@
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer ,Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet"
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png"
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
-export default function MapComponent() {
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon.src,
+  iconRetinaUrl: markerIcon2x.src,
+  shadowUrl: markerShadow.src,
+});
+
+export interface Post {
+  postId: string;
+  displayName: string;
+  content: string;
+  imageUrl: string;
+  userWhere: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+  constructionName: string;
+  roadName: string;
+}
+
+export interface MapComponentProps {
+    markers: Post[]
+}
+
+const MapComponent:React.FC<MapComponentProps> = ({markers = []}) =>{
   const dmsToDegree = (degree: number, minute: number, second: number): number => {
     return degree + minute / 60 + second / 60 / 60;
   };
@@ -20,6 +47,18 @@ export default function MapComponent() {
         url="https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png"
         minZoom={5}
       />
+        {(markers !== null) ? (
+            markers.map((marker) => (
+            <Marker key = {marker.postId} position = {[marker.latitude, marker.longitude]}>
+                <Popup>
+                    {marker.address}
+                </Popup>
+            </Marker>
+        ))) : (
+            <div />
+        )}
     </MapContainer>
   );
 }
+
+export default MapComponent
