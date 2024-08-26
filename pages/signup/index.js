@@ -1,5 +1,4 @@
 import Head from "next/head"
-import Link from "next/link"
 import {FaRegEnvelope} from "react-icons/fa";
 import {MdLockOutline,MdDriveFileRenameOutline} from "react-icons/md";
 import {useState} from "react";
@@ -40,7 +39,7 @@ export default function Signup() {
                 expires.setMinutes(expires.getMinutes() + 5)
                 document.cookie = `token=${jwt};expires=${expires.toUTCString()};path=/signup`
                 await router.push("/verify")
-            } else if (response.status == 401) {
+            } else if (response.status === 401) {
                 console.log("signup failed")
             }
         } catch (error) {
@@ -52,15 +51,14 @@ export default function Signup() {
         <div className={"flex flex-col items-center justify-center min-h-screen py-2"}>
             <Head>
                 <title>Signup</title>
-                <link rel={"icon"} href={"/public/favicon.ico"}/>
             </Head>
             <main className={"flex flex-col items-center justify-center w-full flex-1 px-20 text-center"}>
                 <div className={"flex-col bg-white rounded-2xl min-w-min shadow-2xl flex w-1/4 max-w-4xl p-5"}>
                     <div className={"text-left font-bold"}>
-                        Achy<span className={"text-blue-600"}>U</span>
+                        Achy<span className={"text-sky-600"}>U</span>
                     </div>
                     <div className={"py-10"}>
-                        <h2 className={"text-3xl font-bold text-blue-600"}>
+                        <h2 className={"text-3xl font-bold text-sky-600"}>
                             Sign up the Account
                         </h2>
                     </div>
@@ -89,7 +87,7 @@ export default function Signup() {
                         </div>
                         <div className={"border-2 w-10 border-white inline-block mb-2"} />
                         <button type={"submit"}
-                                className={"border-2 border-blue-600 rounded-full text-blue-600 px-12 py-2 inline-block font-semibold hover:text-white hover:bg-blue-600"}>
+                                className={"border-2 border-sky-600 rounded-full text-sky-600 px-12 py-2 inline-block font-semibold hover:text-white hover:bg-sky-600"}>
                             Sign up!
                         </button>
                     </form>
