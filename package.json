@@ -1,12 +1,22 @@
 {
   "name": "achyu-frontend",
   "version": "0.1.0",
-  "private": true,
+  "homepage": "https://github.com/achyu-nitkc/achyu-frontend#readme",
+  "bugs": {
+    "url": "https://github.com/achyu-nitkc/achyu-frontend/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/achyu-nitkc/achyu-frontend.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "format": "biome format --write",
+    "lint": "biome lint --write",
+    "check": "biome check --write"
   },
   "dependencies": {
     "next": "14.2.5",
@@ -15,13 +25,14 @@
     "react-icons": "^5.3.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.8.3",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.5",
+    "lefthook": "^1.7.14",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
-  }
+  },
+  "private": true
 }
