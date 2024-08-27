@@ -5,6 +5,7 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import GpsButton from "./gpsButton";
+import MapEventHandler from "./mapEventHandler";
 
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon.src,
@@ -61,6 +62,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ markers = [] }) => {
       ) : (
         <div />
       )}
+      <MapEventHandler />
     </MapContainer>
   );
 };
