@@ -7,6 +7,7 @@ import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import GpsButton from "./gpsButton";
 import MapEventHandler from "./mapEventHandler";
 import LocationMarkers from "./locationMarkers";
+import React from "react";
 
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon.src,
@@ -29,13 +30,14 @@ export interface Post {
 
 export interface MapComponentProps {
   markers: Post[];
+  setMarkers: React.Dispatch<React.SetStateAction<Post[]>>;
 }
 
 function dmsToDegree(degree: number, minute: number, second: number): number {
   return degree + minute / 60 + second / 60 / 60;
 }
 
-export default function MapComponent() {
+const MapComponent: React.FC<MapComponentProps> = ({ markers = [], setMarkers }) => {
   return (
     <MapContainer
       center={{ lat: dmsToDegree(35, 39, 29.1572), lng: dmsToDegree(139, 44, 28.8869) }} // 日本経緯度原点
@@ -55,8 +57,10 @@ export default function MapComponent() {
       <ScaleControl position="bottomright" />
       <ZoomControl position="topright" />
       <GpsButton />
-      <LocationMarkers />
+      <LocationMarkers markers={markers} setMarkers={setMarkers} />
       <MapEventHandler />
     </MapContainer>
   );
-}
+};
+
+export default MapComponent;

@@ -1,9 +1,7 @@
-import { Post } from "./map";
-import { useState } from "react";
+import { MapComponentProps, Post } from "./map";
 import { Marker, Popup, useMapEvent } from "react-leaflet";
 
-export default function LocationMarkers() {
-  const [posts, setPosts] = useState<Post[]>([]);
+const LocationMarkers: React.FC<MapComponentProps> = ({ markers = [], setMarkers }) => {
   useMapEvent("click", (location) => {
     const post: Post = {
       postId: "",
@@ -17,16 +15,22 @@ export default function LocationMarkers() {
       constructionName: "",
       roadName: "",
     };
-    setPosts((prevValue) => [...prevValue, post]);
+    setMarkers((prevMarkers) => [...prevMarkers, post]);
+    console.log("Markers:", markers);
   });
-
   return (
     <>
-      {posts.map((post) => (
-        <Marker key={post.postId} position={[post.latitude, post.longitude]}>
-          <Popup>{post.address}</Popup>
-        </Marker>
-      ))}
+      {markers !== null ? (
+        markers.map((post) => (
+          <Marker key={post.postId} position={[post.latitude, post.longitude]}>
+            <Popup>{post.address}</Popup>
+          </Marker>
+        ))
+      ) : (
+        <div></div>
+      )}
     </>
   );
-}
+};
+
+export default LocationMarkers;

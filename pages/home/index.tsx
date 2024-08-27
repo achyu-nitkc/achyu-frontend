@@ -1,11 +1,10 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Post } from "@/components/map";
 import { CiMapPin } from "react-icons/ci";
 import { IoText } from "react-icons/io5";
 import { FiUpload } from "react-icons/fi";
-import { useEffect } from "react";
 
 export default function Home() {
   //Get Cookie
@@ -43,7 +42,7 @@ export default function Home() {
       await getData();
     };
     fetchData();
-  }, [posts]);
+  }, []);
 
   //gps data
   const [latitude, setLatitude] = useState<number | null>(null);
@@ -101,7 +100,7 @@ export default function Home() {
   return (
     <div className={"flex min-h-screen w-full relative"}>
       <div className={"z-0 flex bg-white flex-col w-full justify-center absolute"}>
-        <MapComponent />
+        <MapComponent markers={posts} setMarkers={setPosts} />
       </div>
       <div className={"z-10 flex flex-col bg-white absolute top-32 left-16 w-1/6 h-3/4 shadow-2xl rounded-3xl"}>
         <div className={"flex items-center flex-row m-3 p-2 bg-gray-100 rounded-3xl"}>
