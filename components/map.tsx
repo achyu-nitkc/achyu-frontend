@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, ScaleControl, ZoomControl } from "react-leaflet";
+import { MapContainer, TileLayer, ScaleControl, ZoomControl } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
@@ -6,6 +6,7 @@ import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import GpsButton from "./gpsButton";
 import MapEventHandler from "./mapEventHandler";
+import LocationMarkers from "./locationMarkers";
 
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon.src,
@@ -30,10 +31,11 @@ export interface MapComponentProps {
   markers: Post[];
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({ markers = [] }) => {
-  const dmsToDegree = (degree: number, minute: number, second: number): number => {
-    return degree + minute / 60 + second / 60 / 60;
-  };
+function dmsToDegree(degree: number, minute: number, second: number): number {
+  return degree + minute / 60 + second / 60 / 60;
+}
+
+export default function MapComponent() {
   return (
     <MapContainer
       center={{ lat: dmsToDegree(35, 39, 29.1572), lng: dmsToDegree(139, 44, 28.8869) }} // 日本経緯度原点
@@ -53,18 +55,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ markers = [] }) => {
       <ScaleControl position="bottomright" />
       <ZoomControl position="topright" />
       <GpsButton />
-      {markers !== null ? (
-        markers.map((marker) => (
-          <Marker key={marker.postId} position={[marker.latitude, marker.longitude]}>
-            <Popup>{marker.address}</Popup>
-          </Marker>
-        ))
-      ) : (
-        <div />
-      )}
+      <LocationMarkers />
       <MapEventHandler />
     </MapContainer>
   );
-};
-
-export default MapComponent;
+}
