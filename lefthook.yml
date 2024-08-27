@@ -1,5 +1,5 @@
 pre-commit:
   commands:
-    check:
+    format:
       run: npm run format -- --no-errors-on-unmatched {staged_files}
       stage_fixed: true
