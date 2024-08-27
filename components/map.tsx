@@ -1,9 +1,12 @@
-import { MapContainer, TileLayer ,Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, ScaleControl, ZoomControl } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet"
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png"
+import L from "leaflet";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import GpsButton from "./gpsButton";
+import MapEventHandler from "./mapEventHandler";
+import LocationMarkers from "./locationMarkers";
 
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon.src,
@@ -25,17 +28,19 @@ export interface Post {
 }
 
 export interface MapComponentProps {
-    markers: Post[]
+  markers: Post[];
 }
 
-const MapComponent:React.FC<MapComponentProps> = ({markers = []}) =>{
-  const dmsToDegree = (degree: number, minute: number, second: number): number => {
-    return degree + minute / 60 + second / 60 / 60;
-  };
+function dmsToDegree(degree: number, minute: number, second: number): number {
+  return degree + minute / 60 + second / 60 / 60;
+}
+
+export default function MapComponent() {
   return (
     <MapContainer
       center={{ lat: dmsToDegree(35, 39, 29.1572), lng: dmsToDegree(139, 44, 28.8869) }} // 日本経緯度原点
-      zoom={8.5}
+      zoom={11}
+      zoomControl={false}
       maxBounds={[
         [-90, Number.NEGATIVE_INFINITY],
         [90, Number.POSITIVE_INFINITY],
@@ -44,21 +49,14 @@ const MapComponent:React.FC<MapComponentProps> = ({markers = []}) =>{
     >
       <TileLayer
         attribution='<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>'
-        url="https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png"
+        url="https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png"
         minZoom={5}
       />
-        {(markers !== null) ? (
-            markers.map((marker) => (
-            <Marker key = {marker.postId} position = {[marker.latitude, marker.longitude]}>
-                <Popup>
-                    {marker.address}
-                </Popup>
-            </Marker>
-        ))) : (
-            <div />
-        )}
+      <ScaleControl position="bottomright" />
+      <ZoomControl position="topright" />
+      <GpsButton />
+      <LocationMarkers />
+      <MapEventHandler />
     </MapContainer>
   );
 }
-
-export default MapComponent
