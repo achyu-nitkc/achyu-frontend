@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer ,Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer ,Marker, Popup, ScaleControl } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet"
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png"
@@ -35,7 +35,7 @@ const MapComponent:React.FC<MapComponentProps> = ({markers = []}) =>{
   return (
     <MapContainer
       center={{ lat: dmsToDegree(35, 39, 29.1572), lng: dmsToDegree(139, 44, 28.8869) }} // 日本経緯度原点
-      zoom={8.5}
+      zoom={11}
       maxBounds={[
         [-90, Number.NEGATIVE_INFINITY],
         [90, Number.POSITIVE_INFINITY],
@@ -44,9 +44,10 @@ const MapComponent:React.FC<MapComponentProps> = ({markers = []}) =>{
     >
       <TileLayer
         attribution='<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>'
-        url="https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png"
+        url="https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png"
         minZoom={5}
       />
+      <ScaleControl position="bottomright" />
         {(markers !== null) ? (
             markers.map((marker) => (
             <Marker key = {marker.postId} position = {[marker.latitude, marker.longitude]}>
