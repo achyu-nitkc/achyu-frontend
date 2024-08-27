@@ -19,6 +19,7 @@
     "check": "biome check --write"
   },
   "dependencies": {
+    "blueimp-load-image": "^5.16.0",
     "leaflet": "^1.9.4",
     "next": "14.2.5",
     "react": "^18",
