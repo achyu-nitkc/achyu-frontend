@@ -1,9 +1,10 @@
-import { MapContainer, TileLayer ,Marker, Popup, ScaleControl } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, ScaleControl, ZoomControl } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet"
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png"
+import L from "leaflet";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import GpsButton from "./gpsButton";
 
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon.src,
@@ -25,10 +26,10 @@ export interface Post {
 }
 
 export interface MapComponentProps {
-    markers: Post[]
+  markers: Post[];
 }
 
-const MapComponent:React.FC<MapComponentProps> = ({markers = []}) =>{
+const MapComponent: React.FC<MapComponentProps> = ({ markers = [] }) => {
   const dmsToDegree = (degree: number, minute: number, second: number): number => {
     return degree + minute / 60 + second / 60 / 60;
   };
@@ -36,6 +37,7 @@ const MapComponent:React.FC<MapComponentProps> = ({markers = []}) =>{
     <MapContainer
       center={{ lat: dmsToDegree(35, 39, 29.1572), lng: dmsToDegree(139, 44, 28.8869) }} // 日本経緯度原点
       zoom={11}
+      zoomControl={false}
       maxBounds={[
         [-90, Number.NEGATIVE_INFINITY],
         [90, Number.POSITIVE_INFINITY],
@@ -48,18 +50,19 @@ const MapComponent:React.FC<MapComponentProps> = ({markers = []}) =>{
         minZoom={5}
       />
       <ScaleControl position="bottomright" />
-        {(markers !== null) ? (
-            markers.map((marker) => (
-            <Marker key = {marker.postId} position = {[marker.latitude, marker.longitude]}>
-                <Popup>
-                    {marker.address}
-                </Popup>
-            </Marker>
-        ))) : (
-            <div />
-        )}
+      <ZoomControl position="topright" />
+      <GpsButton />
+      {markers !== null ? (
+        markers.map((marker) => (
+          <Marker key={marker.postId} position={[marker.latitude, marker.longitude]}>
+            <Popup>{marker.address}</Popup>
+          </Marker>
+        ))
+      ) : (
+        <div />
+      )}
     </MapContainer>
   );
-}
+};
 
-export default MapComponent
+export default MapComponent;
