@@ -94,8 +94,8 @@ export default function Home() {
         },
         body: JSON.stringify(jsonData),
       });
-      //map pin
 
+      //map pin
       if (response.ok) {
         const tmpPosts: Post[] = await response.json();
         setPosts((prevPosts) => {
@@ -222,10 +222,20 @@ export default function Home() {
     }
   };
 
+  const [backgroundImg, setBackgroundImg] = useState<string>("");
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("@ handleFileChange");
     if (e.currentTarget.files && e.currentTarget.files[0]) {
       const targetFile = e.currentTarget.files[0];
       setImageFile(targetFile);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        console.log(result);
+        setBackgroundImg(result);
+      };
+      reader.readAsDataURL(targetFile);
     }
   };
 
@@ -285,6 +295,7 @@ export default function Home() {
                   <input
                     type={"text"}
                     name={"Address"}
+                    onChange={handleChange}
                     placeholder={"Ex: Kioi1-3 Chioda,Tokyo"}
                     className={"text-lg outline-none flex-1 p-2 hover:bg-gray-100"}
                   />
@@ -294,6 +305,7 @@ export default function Home() {
                   <input
                     type={"text"}
                     name={"Content"}
+                    onChange={handleChange}
                     placeholder={"Ex: It's dangerous!"}
                     className={"text-lg outline-none flex-1 p-2 hover:bg-gray-100"}
                   />
@@ -303,10 +315,20 @@ export default function Home() {
                     "p-2 aspect-video border-dashed border-2 items-center border-sky-600 rounded-2xl bg-gray-100 hover:bg-gray-200"
                   }
                   onClick={fileUpload}
+                  style={{
+                    backgroundImage: backgroundImg === "" ? "none" : `url(${backgroundImg})`,
+                    backgroundSize: "cover",
+                  }}
                 >
                   <div ref={divRef} className={"flex-row m-12 flex items-center"}>
-                    <FiUpload className={"text-xl m-2"} />
-                    <p className={"text-xl"}>Add Image!</p>
+                    {backgroundImg === "" ? (
+                      <>
+                        <FiUpload className={"text-xl m-2"} />
+                        <p className={"text-xl"}>Add Image!</p>
+                      </>
+                    ) : (
+                      <div></div>
+                    )}
                   </div>
                   <input onChange={handleFileChange} type={"file"} name={"file"} ref={inputRef} hidden={true} />
                 </div>
