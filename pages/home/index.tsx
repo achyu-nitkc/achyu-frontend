@@ -1,10 +1,12 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Post } from "@/components/map";
 import { CiMapPin } from "react-icons/ci";
 import { IoText } from "react-icons/io5";
 import { FiUpload } from "react-icons/fi";
+import path from "path";
+import fs from "fs";
 
 export default function Home() {
   //Get Cookie
@@ -44,6 +46,29 @@ export default function Home() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      if (posts === null) {
+        return;
+      }
+      if (posts.length === 0) {
+        return;
+      }
+      if (latitude === posts[posts.length - 1].latitude || longitude === posts[posts.length - 1].longitude) {
+        return;
+      }
+      tokenCookie = getCookie("token");
+      if (tokenCookie === undefined) {
+        await router.push("/login");
+      }
+      console.log("@fetchData");
+      setLatitude(posts[posts.length - 1].latitude);
+      setLongitude(posts[posts.length - 1].longitude);
+      await getData();
+    };
+    fetchData();
+  }, [posts]);
+
   //gps data
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
@@ -73,7 +98,16 @@ export default function Home() {
 
       if (response.ok) {
         const tmpPosts: Post[] = await response.json();
-        setPosts(tmpPosts);
+        setPosts((prevPosts) => {
+          if (!posts) {
+            return tmpPosts;
+          }
+          if (!tmpPosts) {
+            return prevPosts;
+          }
+          const uniqPosts = tmpPosts.filter((tmpPost) => !prevPosts.some((post) => post.postId == tmpPost.postId));
+          return [...prevPosts, ...uniqPosts];
+        });
       }
     } catch (error) {
       console.log(error);
@@ -94,6 +128,104 @@ export default function Home() {
   const handleClose = (e: any) => {
     if (e.target.id === "wrapper") {
       setIsVisible(false);
+    }
+  };
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const divRef = useRef<HTMLDivElement | null>(null);
+
+  const fileUpload = () => {
+    if (inputRef.current) {
+      inputRef.current.click();
+    }
+  };
+
+  const [formData, setFormData] = useState({
+    Address: "",
+    Content: "",
+  });
+
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const userPost = posts.find((post) => post.postId === "user");
+    const userLat = userPost?.latitude;
+    const userLon = userPost?.longitude;
+    tokenCookie = getCookie("token");
+
+    if (imageFile) {
+      const imageForm = new FormData();
+      imageForm.append("file", imageFile);
+
+      const response1 = await fetch("api/upload", {
+        method: "POST",
+        body: imageForm,
+      });
+      if (response1.status !== 200) {
+        return;
+      }
+      const res = await response1.json();
+      const imageURL = res.message;
+
+      const jsonData = {
+        Token: tokenCookie,
+        Latitude: userLat,
+        Longitude: userLon,
+        Content: formData.Content,
+        ImageURL: imageURL,
+        Where: formData.Address,
+      };
+      const response2 = await fetch("http://localhost:8080/post", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(jsonData),
+      });
+      if (response2.ok) {
+        console.log("POST SUCCESS!");
+        setIsVisible(false);
+      } else {
+        console.log("ERROR @ POST");
+      }
+    } else {
+      const jsonData = {
+        Token: tokenCookie,
+        Latitude: userLat,
+        Longitude: userLon,
+        Content: formData.Content,
+        ImageURL: "",
+        Where: formData.Address,
+      };
+      const response = await fetch("http://localhost:8080/post", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(jsonData),
+      });
+      if (response.ok) {
+        console.log("POST SUCCESS!");
+      } else {
+        console.log("ERROR @ POST");
+      }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.currentTarget.files && e.currentTarget.files[0]) {
+      const targetFile = e.currentTarget.files[0];
+      setImageFile(targetFile);
     }
   };
 
@@ -147,18 +279,21 @@ export default function Home() {
               X
             </button>
             <div className={"bg-white flex-col rounded-3xl p-5"}>
-              <form className={"flex flex-col items-start"}>
+              <form onSubmit={handleSubmit} className={"flex flex-col items-start"}>
                 <div className={"p-2 rounded-3xl flex flex-row items-center mb-3 border-b-2 border-b-sky-400 w-full"}>
                   <CiMapPin className={"text-gray-400 mr-2"} />
                   <input
                     type={"text"}
+                    name={"Address"}
                     placeholder={"Ex: Kioi1-3 Chioda,Tokyo"}
                     className={"text-lg outline-none flex-1 p-2 hover:bg-gray-100"}
                   />
                 </div>
                 <div className={"p-2 rounded-3xl flex flex-row items-center mb-3 border-b-2 border-b-sky-400 w-full"}>
                   <IoText className={"text-gray-400 mr-2"} />
-                  <textarea
+                  <input
+                    type={"text"}
+                    name={"Content"}
                     placeholder={"Ex: It's dangerous!"}
                     className={"text-lg outline-none flex-1 p-2 hover:bg-gray-100"}
                   />
@@ -167,12 +302,24 @@ export default function Home() {
                   className={
                     "p-2 aspect-video border-dashed border-2 items-center border-sky-600 rounded-2xl bg-gray-100 hover:bg-gray-200"
                   }
+                  onClick={fileUpload}
                 >
-                  <div className={"flex-row m-12 flex items-center"}>
+                  <div ref={divRef} className={"flex-row m-12 flex items-center"}>
                     <FiUpload className={"text-xl m-2"} />
                     <p className={"text-xl"}>Add Image!</p>
                   </div>
+                  <input onChange={handleFileChange} type={"file"} name={"file"} ref={inputRef} hidden={true} />
                 </div>
+
+                <div className={"border-2 w-10 border-white inline-block mb-2"} />
+                <button
+                  type={"submit"}
+                  className={
+                    "border-2 self-center border-sky-600 rounded-full text-sky-600 px-12 py-2 inline-block font-semibold hover:text-white hover:bg-sky-600"
+                  }
+                >
+                  Post!
+                </button>
               </form>
             </div>
           </div>

@@ -1,70 +1,41 @@
-import {NextRequest, NextResponse} from "next/server";
-import fs from "fs"
-import path from "path"
-import {execFile} from "node:child_process";
-
-const UPLOAD_DIR = process.cwd() + "public/images"
+import fs from "fs";
+import path from "path";
+import fomidable, { File, IncomingForm } from "formidable-serverless";
+import { NextApiRequest, NextApiResponse } from "next";
 
 export const config = {
-    api: {
-        bodyParser: false
+  api: {
+    bodyParser: false,
+  },
+};
+
+export default async function handler(req: NextApiRequest | File | Date, res: NextApiResponse) {
+  const form = new IncomingForm();
+  form.uploadDir = "./public/images";
+  form.keepExtensions = true;
+  form.parse(req, (err, fields, files: { [key: string]: any }) => {
+    if (err) {
+      res.status(500).json({
+        message: "ERROR",
+      });
     }
-}
-type Data = {
-    msg?: string
-}
-
-const checkEdited = (file: File) => {
-    const loadImage = require("blueimp-load-image")
-    loadImage.parseMetaData(file, (data: any) => {
-        console.log(data)
-        console.log("Exif data: ", data.exif)
-        if ("Software" in data.exif) {
-            return true
-        }
-    })
-    return false
-}
-
-export default async function handler(
-    req: NextRequest,
-) {
-    const formData = await req.formData()
-    const body = Object.fromEntries(formData)
-    const file = (body.file as Blob) || null
-    const nowDate: string = new Date().toString()
-    const userFilename = (body.file as File).name
-    const userFilename_encoded = Buffer.from(userFilename, 'utf-8').toString("base64")
-
-    if (file) {
-        const filename: string = checkEdited(body.file as File) ? "EDITED-" + nowDate + userFilename_encoded : nowDate + userFilename_encoded
-        const buffer = Buffer.from(await file.arrayBuffer())
-        if (!fs.existsSync(UPLOAD_DIR)) {
-            fs.mkdirSync(UPLOAD_DIR)
-        }
-        fs.writeFileSync(
-            path.resolve(UPLOAD_DIR, filename),
-            buffer
-        )
-        const script = path.join(process.cwd(), "script", "imgModify.py")
-        execFile("python3", [script, path.resolve(UPLOAD_DIR, filename)], (error, stdout, stderr) => {
-            if (error) {
-                console.error("ERROR!SCRIPT FAILED")
-                return NextResponse.json({
-                    success: false,
-                    name: ""
-                })
-            }
-        })
-        return NextResponse.json({
-            success: true,
-            name: filename
-        })
-    } else {
-        return NextResponse.json({
-            success: false,
-            name: ""
-        })
+    const file = files.file;
+    if (!file) {
+      res.status(500).json({
+        message: "ERROR",
+      });
     }
-
+    const nowDate: string = new Date().toString();
+    const newPath = path.join(process.cwd(), "public/images", nowDate + file.name);
+    fs.rename(file.path, newPath, (err) => {
+      if (err) {
+        res.status(500).json({
+          message: "ERROR",
+        });
+      }
+      res.status(200).json({
+        message: newPath,
+      });
+    });
+  });
 }
