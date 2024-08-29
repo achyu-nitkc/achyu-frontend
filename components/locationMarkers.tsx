@@ -1,32 +1,84 @@
-import { Post } from "./map";
-import { useState } from "react";
+import { MapComponentProps, Post } from "./map";
 import { Marker, Popup, useMapEvent } from "react-leaflet";
+import Image from "next/image";
 
-export default function LocationMarkers() {
-  const [posts, setPosts] = useState<Post[]>([]);
+const LocationMarkers: React.FC<MapComponentProps> = ({ markers = [], setMarkers }) => {
   useMapEvent("click", (location) => {
     const post: Post = {
-      postId: "",
+      postId: "user",
       displayName: "",
       content: "",
       imageUrl: "",
       userWhere: "",
       latitude: location.latlng.lat,
       longitude: location.latlng.lng,
-      address: "testAddress",
-      constructionName: "",
+      address: "",
+      constructionName: "Pointed",
       roadName: "",
     };
-    setPosts((prevValue) => [...prevValue, post]);
+    setMarkers((prevMarkers) => prevMarkers.filter((post) => post.postId !== "user"));
+    setMarkers((prevMarkers) => [...(prevMarkers || []), post]);
+    console.log("Markers:", markers);
   });
-
   return (
     <>
-      {posts.map((post) => (
-        <Marker key={post.postId} position={[post.latitude, post.longitude]}>
-          <Popup>{post.address}</Popup>
-        </Marker>
-      ))}
+      {markers !== null && markers.length !== 0 ? (
+        markers.map((post) => (
+          <Marker key={post.postId} position={[post.latitude, post.longitude]}>
+            <Popup>
+              <div>
+                <p className={"text-m"}>{post.constructionName === "" ? "Unknown" : post.constructionName}</p>
+                <div className={"flex-col"}>
+                  <p className={"text-xs"}>{post.address}</p>
+                  <p>{post.roadName}</p>
+                </div>
+                <div className={"flex-col border-b-2 border-b-sky-600"}>
+                  <p>{post.postId !== "user" ? "投稿者: " + post.displayName : ""}</p>
+                  <p>
+                    {post.postId !== "user" ? (
+                      new Date(
+                        Number(
+                          ((BigInt(
+                            new DataView(Buffer.from(post.postId.substring(0, 12), "base64").buffer).getUint32(0),
+                          ) <<
+                            32n) +
+                            BigInt(
+                              new DataView(Buffer.from(post.postId.substring(0, 12), "base64").buffer).getUint32(4),
+                            )) /
+                            1000n,
+                        ),
+                      ).toString()
+                    ) : (
+                      <div />
+                    )}
+                  </p>
+                </div>
+                {post.postId !== "user" ? (
+                  <div className={"flex-col"}>
+                    <p>{post.content}</p>
+                    {post.imageUrl !== "" ? (
+                      <Image
+                        width={320}
+                        height={180}
+                        src={"http://localhost:3000/images/" + post.imageUrl}
+                        alt={"image"}
+                      />
+                    ) : (
+                      <div />
+                    )}
+                  </div>
+                ) : (
+                  <div />
+                )}
+              </div>
+            </Popup>
+          </Marker>
+        ))
+      ) : (
+        <div />
+      )}
     </>
   );
-}
+};
+
+export default LocationMarkers;

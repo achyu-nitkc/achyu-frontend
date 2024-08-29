@@ -1,11 +1,12 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Post } from "@/components/map";
 import { CiMapPin } from "react-icons/ci";
 import { IoText } from "react-icons/io5";
 import { FiUpload } from "react-icons/fi";
-import { useEffect } from "react";
+import { FaLongArrowAltLeft } from "react-icons/fa";
+import Image from "next/image";
 
 export default function Home() {
   //Get Cookie
@@ -43,6 +44,29 @@ export default function Home() {
       await getData();
     };
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (posts === null) {
+        return;
+      }
+      if (posts.length === 0) {
+        return;
+      }
+      if (latitude === posts[posts.length - 1].latitude || longitude === posts[posts.length - 1].longitude) {
+        return;
+      }
+      tokenCookie = getCookie("token");
+      if (tokenCookie === undefined) {
+        await router.push("/login");
+      }
+      console.log("@fetchData");
+      setLatitude(posts[posts.length - 1].latitude);
+      setLongitude(posts[posts.length - 1].longitude);
+      await getData();
+    };
+    fetchData();
   }, [posts]);
 
   //gps data
@@ -70,11 +94,20 @@ export default function Home() {
         },
         body: JSON.stringify(jsonData),
       });
-      //map pin
 
+      //map pin
       if (response.ok) {
         const tmpPosts: Post[] = await response.json();
-        setPosts(tmpPosts);
+        setPosts((prevPosts) => {
+          if (!posts) {
+            return tmpPosts;
+          }
+          if (!tmpPosts) {
+            return prevPosts;
+          }
+          const uniqPosts = tmpPosts.filter((tmpPost) => !prevPosts.some((post) => post.postId == tmpPost.postId));
+          return [...prevPosts, ...uniqPosts];
+        });
       }
     } catch (error) {
       console.log(error);
@@ -98,37 +131,227 @@ export default function Home() {
     }
   };
 
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const divRef = useRef<HTMLDivElement | null>(null);
+
+  const fileUpload = () => {
+    if (inputRef.current) {
+      inputRef.current.click();
+    }
+  };
+
+  const [formData, setFormData] = useState({
+    Address: "",
+    Content: "",
+  });
+
+  const handleChange = (e: any) => {
+    console.log("@handleChange");
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+    console.log(formData);
+  };
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const userPost = posts.find((post) => post.postId === "user");
+    const userLat = userPost?.latitude;
+    const userLon = userPost?.longitude;
+    tokenCookie = getCookie("token");
+
+    if (imageFile) {
+      const imageForm = new FormData();
+      imageForm.append("file", imageFile);
+
+      const response1 = await fetch("api/upload", {
+        method: "POST",
+        body: imageForm,
+      });
+      if (response1.status !== 200) {
+        return;
+      }
+      const res = await response1.json();
+      const imageURL = res.message;
+
+      const jsonData = {
+        Token: tokenCookie,
+        Latitude: userLat,
+        Longitude: userLon,
+        Content: formData.Content,
+        ImageURL: imageURL,
+        Where: formData.Address,
+      };
+      const response2 = await fetch("http://localhost:8080/post", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(jsonData),
+      });
+      if (response2.ok) {
+        console.log("POST SUCCESS!");
+        setIsVisible(false);
+      } else {
+        console.log("ERROR @ POST");
+      }
+    } else {
+      const jsonData = {
+        Token: tokenCookie,
+        Latitude: userLat,
+        Longitude: userLon,
+        Content: formData.Content,
+        ImageURL: "",
+        Where: formData.Address,
+      };
+      const response = await fetch("http://localhost:8080/post", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(jsonData),
+      });
+      if (response.ok) {
+        console.log("POST SUCCESS!");
+      } else {
+        console.log("ERROR @ POST");
+      }
+    }
+  };
+
+  const [backgroundImg, setBackgroundImg] = useState<string>("");
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("@ handleFileChange");
+    if (e.currentTarget.files && e.currentTarget.files[0]) {
+      const targetFile = e.currentTarget.files[0];
+      setImageFile(targetFile);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        console.log(result);
+        setBackgroundImg(result);
+      };
+      reader.readAsDataURL(targetFile);
+    }
+  };
+
+  const [selectedPost, setSelectedPost] = useState<Post | undefined>(undefined);
+  const [selected, setSelected] = useState<boolean>(false);
+
+  const handleListClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const divId = e.currentTarget.id;
+    const userPost = posts.find((post) => post.postId === divId);
+    setSelectedPost(userPost);
+    setSelected(true);
+  };
+
+  const handleListClose = () => {
+    setSelected(false);
+  };
+
   return (
     <div className={"flex min-h-screen w-full relative"}>
       <div className={"z-0 flex bg-white flex-col w-full justify-center absolute"}>
-        <MapComponent />
+        <MapComponent markers={posts} setMarkers={setPosts} />
       </div>
       <div className={"z-10 flex flex-col bg-white absolute top-32 left-16 w-1/6 h-3/4 shadow-2xl rounded-3xl"}>
-        <div className={"flex items-center flex-row m-3 p-2 bg-gray-100 rounded-3xl"}>
-          <input type={"text"} placeholder={"Search"} className={"w-full h-full m-2 bg-gray-100 flex-1 outline-none"} />
-        </div>
-        <div className={"flex flex-col bg-white"}>
-          {posts !== null ? (
-            posts.map((post) => (
-              <div className={"border-b-2 hover:bg-gray-100 border-sky-600 p-3"}>
-                <p className={"text-m"}>{post.constructionName === "" ? "Unknown" : post.constructionName}</p>
-                <div className={"flex-col"}>
-                  <p className={"text-xs"}>{post.address}</p>
-                  <p>{post.roadName}</p>
-                </div>
+        {selected && selectedPost ? (
+          <div className={"flex flex-col bg-white m-2"}>
+            <button onClick={handleListClose}>
+              <FaLongArrowAltLeft className={"text-sky-600 text-2xl m-2"} />
+            </button>
+            <div>
+              <p className={"text-2xl"}>
+                {selectedPost.constructionName === "" ? "Unknown" : selectedPost.constructionName}
+              </p>
+              <div className={"flex-col p-2"}>
+                <p className={"text-xs"}>{selectedPost.address}</p>
+                <p>{selectedPost.roadName}</p>
               </div>
-            ))
-          ) : (
-            <div />
-          )}
-          <p className={"text-xs m-3"}>You've reached the end of the list.</p>
-        </div>
-
+              <div className={"flex-col p-2 border-b-2 border-b-sky-600"}>
+                <p className={"text-xs"}>
+                  {selectedPost.postId !== "user" ? "投稿者: " + selectedPost.displayName : ""}
+                </p>
+                <p className={"text-xs"}>
+                  {selectedPost.postId !== "user" ? (
+                    new Date(
+                      Number(
+                        ((BigInt(
+                          new DataView(Buffer.from(selectedPost.postId.substring(0, 12), "base64").buffer).getUint32(0),
+                        ) <<
+                          32n) +
+                          BigInt(
+                            new DataView(Buffer.from(selectedPost.postId.substring(0, 12), "base64").buffer).getUint32(
+                              4,
+                            ),
+                          )) /
+                          1000n,
+                      ),
+                    ).toString()
+                  ) : (
+                    <div />
+                  )}
+                </p>
+              </div>
+              {selectedPost.postId !== "user" ? (
+                <div className={"flex-col"}>
+                  <p className={"m-2"}>{selectedPost.content}</p>
+                  {selectedPost.imageUrl !== "" ? (
+                    <Image
+                      width={320}
+                      height={180}
+                      src={"http://localhost:3000/images/" + selectedPost.imageUrl}
+                      alt={"image"}
+                    />
+                  ) : (
+                    <div />
+                  )}
+                </div>
+              ) : (
+                <div />
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className={"flex flex-col bg-white"}>
+            <div className={"flex items-center flex-row m-3 p-2 bg-gray-100 rounded-3xl"}>
+              <input
+                type={"text"}
+                placeholder={"Search"}
+                className={"w-full h-full m-2 bg-gray-100 flex-1 outline-none"}
+              />
+            </div>
+            {posts !== null ? (
+              posts.map((post) => (
+                <div
+                  id={post.postId}
+                  onClick={handleListClick}
+                  className={"border-b-2 hover:bg-gray-100 border-sky-600 p-3"}
+                >
+                  <p className={"text-m"}>{post.constructionName === "" ? "Unknown" : post.constructionName}</p>
+                  <div className={"flex-col"}>
+                    <p className={"text-xs"}>{post.address}</p>
+                    <p>{post.roadName}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div />
+            )}
+            <p className={"text-xs m-3"}>You've reached the end of the list.</p>
+          </div>
+        )}
         <div className={"self-center m-10"}>
           <button
             onClick={() => setIsVisible(true)}
             className={
-              "border-2 border-sky-600 rounded-full text-sky-600 px-12 py-2 inline-block font-semibold hover:text-white hover:bg-sky-600"
+              "border-2 bg-white border-sky-600 rounded-full text-sky-600 px-12 py-2 inline-block font-semibold hover:text-white hover:bg-sky-600"
             }
           >
             Post!
@@ -148,18 +371,23 @@ export default function Home() {
               X
             </button>
             <div className={"bg-white flex-col rounded-3xl p-5"}>
-              <form className={"flex flex-col items-start"}>
+              <form onSubmit={handleSubmit} className={"flex flex-col items-start"}>
                 <div className={"p-2 rounded-3xl flex flex-row items-center mb-3 border-b-2 border-b-sky-400 w-full"}>
                   <CiMapPin className={"text-gray-400 mr-2"} />
                   <input
                     type={"text"}
+                    name={"Address"}
+                    onChange={handleChange}
                     placeholder={"Ex: Kioi1-3 Chioda,Tokyo"}
                     className={"text-lg outline-none flex-1 p-2 hover:bg-gray-100"}
                   />
                 </div>
                 <div className={"p-2 rounded-3xl flex flex-row items-center mb-3 border-b-2 border-b-sky-400 w-full"}>
                   <IoText className={"text-gray-400 mr-2"} />
-                  <textarea
+                  <input
+                    type={"text"}
+                    name={"Content"}
+                    onChange={handleChange}
                     placeholder={"Ex: It's dangerous!"}
                     className={"text-lg outline-none flex-1 p-2 hover:bg-gray-100"}
                   />
@@ -168,12 +396,34 @@ export default function Home() {
                   className={
                     "p-2 aspect-video border-dashed border-2 items-center border-sky-600 rounded-2xl bg-gray-100 hover:bg-gray-200"
                   }
+                  onClick={fileUpload}
+                  style={{
+                    backgroundImage: backgroundImg === "" ? "none" : `url(${backgroundImg})`,
+                    backgroundSize: "cover",
+                  }}
                 >
-                  <div className={"flex-row m-12 flex items-center"}>
-                    <FiUpload className={"text-xl m-2"} />
-                    <p className={"text-xl"}>Add Image!</p>
+                  <div ref={divRef} className={"flex-row m-12 flex items-center"}>
+                    {backgroundImg === "" ? (
+                      <>
+                        <FiUpload className={"text-xl m-2"} />
+                        <p className={"text-xl"}>Add Image!</p>
+                      </>
+                    ) : (
+                      <div></div>
+                    )}
                   </div>
+                  <input onChange={handleFileChange} type={"file"} name={"file"} ref={inputRef} hidden={true} />
                 </div>
+
+                <div className={"border-2 w-10 border-white inline-block mb-2"} />
+                <button
+                  type={"submit"}
+                  className={
+                    "border-2 self-center border-sky-600 rounded-full text-sky-600 px-12 py-2 inline-block font-semibold hover:text-white hover:bg-sky-600"
+                  }
+                >
+                  Post!
+                </button>
               </form>
             </div>
           </div>

@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "blueimp-load-image": "^5.16.0",
+    "formidable": "^3.5.1",
+    "formidable-serverless": "^1.1.1",
     "leaflet": "^1.9.4",
     "next": "14.2.5",
     "react": "^18",
@@ -30,6 +32,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
+    "@types/formidable": "^3.4.5",
     "@types/leaflet": "^1.9.12",
     "@types/node": "^20",
     "@types/react": "^18",
