@@ -1,5 +1,6 @@
 import { MapComponentProps, Post } from "./map";
 import { Marker, Popup, useMapEvent } from "react-leaflet";
+import Image from "next/image";
 
 const LocationMarkers: React.FC<MapComponentProps> = ({ markers = [], setMarkers }) => {
   useMapEvent("click", (location) => {
@@ -25,14 +26,14 @@ const LocationMarkers: React.FC<MapComponentProps> = ({ markers = [], setMarkers
         markers.map((post) => (
           <Marker key={post.postId} position={[post.latitude, post.longitude]}>
             <Popup>
-              <div className={"max-w-2xl"}>
+              <div>
                 <p className={"text-m"}>{post.constructionName === "" ? "Unknown" : post.constructionName}</p>
                 <div className={"flex-col"}>
                   <p className={"text-xs"}>{post.address}</p>
                   <p>{post.roadName}</p>
                 </div>
-                <div className={"flex-col"}>
-                  <p>{post.displayName}</p>
+                <div className={"flex-col border-b-2 border-b-sky-600"}>
+                  <p>{post.postId !== "user" ? "投稿者: " + post.displayName : ""}</p>
                   <p>
                     {post.postId !== "user" ? (
                       new Date(
@@ -52,12 +53,29 @@ const LocationMarkers: React.FC<MapComponentProps> = ({ markers = [], setMarkers
                     )}
                   </p>
                 </div>
+                {post.postId !== "user" ? (
+                  <div className={"flex-col"}>
+                    <p>{post.content}</p>
+                    {post.imageUrl !== "" ? (
+                      <Image
+                        width={320}
+                        height={180}
+                        src={"http://localhost:3000/images/" + post.imageUrl}
+                        alt={"image"}
+                      />
+                    ) : (
+                      <div />
+                    )}
+                  </div>
+                ) : (
+                  <div />
+                )}
               </div>
             </Popup>
           </Marker>
         ))
       ) : (
-        <div></div>
+        <div />
       )}
     </>
   );

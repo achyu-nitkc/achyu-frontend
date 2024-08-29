@@ -5,8 +5,8 @@ import { Post } from "@/components/map";
 import { CiMapPin } from "react-icons/ci";
 import { IoText } from "react-icons/io5";
 import { FiUpload } from "react-icons/fi";
-import path from "path";
-import fs from "fs";
+import { FaLongArrowAltLeft } from "react-icons/fa";
+import Image from "next/image";
 
 export default function Home() {
   //Get Cookie
@@ -147,11 +147,13 @@ export default function Home() {
   });
 
   const handleChange = (e: any) => {
+    console.log("@handleChange");
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
     });
+    console.log(formData);
   };
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -239,32 +241,112 @@ export default function Home() {
     }
   };
 
+  const [selectedPost, setSelectedPost] = useState<Post | undefined>(undefined);
+  const [selected, setSelected] = useState<boolean>(false);
+
+  const handleListClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const divId = e.currentTarget.id;
+    const userPost = posts.find((post) => post.postId === divId);
+    setSelectedPost(userPost);
+    setSelected(true);
+  };
+
+  const handleListClose = () => {
+    setSelected(false);
+  };
+
   return (
     <div className={"flex min-h-screen w-full relative"}>
       <div className={"z-0 flex bg-white flex-col w-full justify-center absolute"}>
         <MapComponent markers={posts} setMarkers={setPosts} />
       </div>
       <div className={"z-10 flex flex-col bg-white absolute top-32 left-16 w-1/6 h-3/4 shadow-2xl rounded-3xl"}>
-        <div className={"flex items-center flex-row m-3 p-2 bg-gray-100 rounded-3xl"}>
-          <input type={"text"} placeholder={"Search"} className={"w-full h-full m-2 bg-gray-100 flex-1 outline-none"} />
-        </div>
-        <div className={"flex flex-col bg-white"}>
-          {posts !== null ? (
-            posts.map((post) => (
-              <div className={"border-b-2 hover:bg-gray-100 border-sky-600 p-3"}>
-                <p className={"text-m"}>{post.constructionName === "" ? "Unknown" : post.constructionName}</p>
-                <div className={"flex-col"}>
-                  <p className={"text-xs"}>{post.address}</p>
-                  <p>{post.roadName}</p>
-                </div>
+        {selected && selectedPost ? (
+          <div className={"flex flex-col bg-white m-2"}>
+            <button onClick={handleListClose}>
+              <FaLongArrowAltLeft className={"text-sky-600 text-2xl m-2"} />
+            </button>
+            <div>
+              <p className={"text-2xl"}>
+                {selectedPost.constructionName === "" ? "Unknown" : selectedPost.constructionName}
+              </p>
+              <div className={"flex-col p-2"}>
+                <p className={"text-xs"}>{selectedPost.address}</p>
+                <p>{selectedPost.roadName}</p>
               </div>
-            ))
-          ) : (
-            <div />
-          )}
-          <p className={"text-xs m-3"}>You've reached the end of the list.</p>
-        </div>
-
+              <div className={"flex-col p-2 border-b-2 border-b-sky-600"}>
+                <p className={"text-xs"}>
+                  {selectedPost.postId !== "user" ? "投稿者: " + selectedPost.displayName : ""}
+                </p>
+                <p className={"text-xs"}>
+                  {selectedPost.postId !== "user" ? (
+                    new Date(
+                      Number(
+                        ((BigInt(
+                          new DataView(Buffer.from(selectedPost.postId.substring(0, 12), "base64").buffer).getUint32(0),
+                        ) <<
+                          32n) +
+                          BigInt(
+                            new DataView(Buffer.from(selectedPost.postId.substring(0, 12), "base64").buffer).getUint32(
+                              4,
+                            ),
+                          )) /
+                          1000n,
+                      ),
+                    ).toString()
+                  ) : (
+                    <div />
+                  )}
+                </p>
+              </div>
+              {selectedPost.postId !== "user" ? (
+                <div className={"flex-col"}>
+                  <p className={"m-2"}>{selectedPost.content}</p>
+                  {selectedPost.imageUrl !== "" ? (
+                    <Image
+                      width={320}
+                      height={180}
+                      src={"http://localhost:3000/images/" + selectedPost.imageUrl}
+                      alt={"image"}
+                    />
+                  ) : (
+                    <div />
+                  )}
+                </div>
+              ) : (
+                <div />
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className={"flex flex-col bg-white"}>
+            <div className={"flex items-center flex-row m-3 p-2 bg-gray-100 rounded-3xl"}>
+              <input
+                type={"text"}
+                placeholder={"Search"}
+                className={"w-full h-full m-2 bg-gray-100 flex-1 outline-none"}
+              />
+            </div>
+            {posts !== null ? (
+              posts.map((post) => (
+                <div
+                  id={post.postId}
+                  onClick={handleListClick}
+                  className={"border-b-2 hover:bg-gray-100 border-sky-600 p-3"}
+                >
+                  <p className={"text-m"}>{post.constructionName === "" ? "Unknown" : post.constructionName}</p>
+                  <div className={"flex-col"}>
+                    <p className={"text-xs"}>{post.address}</p>
+                    <p>{post.roadName}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div />
+            )}
+            <p className={"text-xs m-3"}>You've reached the end of the list.</p>
+          </div>
+        )}
         <div className={"self-center m-10"}>
           <button
             onClick={() => setIsVisible(true)}
