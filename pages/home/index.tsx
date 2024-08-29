@@ -5,8 +5,10 @@ import { Post } from "@/components/map";
 import { CiMapPin } from "react-icons/ci";
 import { IoText } from "react-icons/io5";
 import { FiUpload } from "react-icons/fi";
-import { FaLongArrowAltLeft } from "react-icons/fa";
+import { FaLongArrowAltLeft, FaRegTrashAlt } from "react-icons/fa";
 import Image from "next/image";
+import jwt from "jsonwebtoken";
+import CryptoJs from "crypto-js";
 
 export default function Home() {
   //Get Cookie
@@ -33,12 +35,21 @@ export default function Home() {
   //post data
   const [posts, setPosts] = useState<Post[]>([]);
 
+  const [hash, setHash] = useState<string>("");
+
   //Information Initialization
   useEffect(() => {
     const fetchData = async () => {
       tokenCookie = getCookie("token");
       if (tokenCookie === undefined) {
         await router.push("/login");
+      } else {
+        const decoded = jwt.decode(tokenCookie);
+        if (typeof decoded === "object" && decoded !== null && "email" in decoded) {
+          const hash = CryptoJs.MD5((decoded as { email: string }).email).toString(CryptoJs.enc.Hex);
+          setHash(hash);
+          console.log("hash @ ", hash);
+        }
       }
       getLocation();
       await getData();
@@ -255,6 +266,30 @@ export default function Home() {
     setSelected(false);
   };
 
+  const handleDelete = async () => {
+    if (!selectedPost) {
+      return;
+    }
+    tokenCookie = getCookie("token");
+    const jsonData = {
+      Token: tokenCookie,
+      PostId: selectedPost?.postId,
+    };
+    const response = await fetch("http://localhost:8080/delete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(jsonData),
+    });
+    if (response.ok) {
+      setSelected(false);
+      console.log("POST SUCCESS!");
+    } else {
+      console.log("ERROR @ POST");
+    }
+  };
+
   return (
     <div className={"flex min-h-screen w-full relative"}>
       <div className={"z-0 flex bg-white flex-col w-full justify-center absolute"}>
@@ -263,9 +298,18 @@ export default function Home() {
       <div className={"z-10 flex flex-col bg-white absolute top-32 left-16 w-1/6 h-3/4 shadow-2xl rounded-3xl"}>
         {selected && selectedPost ? (
           <div className={"flex flex-col bg-white m-2"}>
-            <button onClick={handleListClose}>
-              <FaLongArrowAltLeft className={"text-sky-600 text-2xl m-2"} />
-            </button>
+            <div className={"flex flex-row"}>
+              <button onClick={handleListClose} className={"max-w-16 min-w-16"}>
+                <FaLongArrowAltLeft className={"text-sky-600 text-2xl m-2"} />
+              </button>
+              {selectedPost.postId.includes(hash) ? (
+                <button onClick={handleDelete}>
+                  <FaRegTrashAlt className={"text-red-500 text-xl m-2"} />
+                </button>
+              ) : (
+                <div />
+              )}
+            </div>
             <div>
               <p className={"text-2xl"}>
                 {selectedPost.constructionName === "" ? "Unknown" : selectedPost.constructionName}
