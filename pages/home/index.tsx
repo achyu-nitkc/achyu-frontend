@@ -269,7 +269,7 @@ export default function Home() {
           <button
             onClick={() => setIsVisible(true)}
             className={
-              "border-2 border-sky-600 rounded-full text-sky-600 px-12 py-2 inline-block font-semibold hover:text-white hover:bg-sky-600"
+              "border-2 bg-white border-sky-600 rounded-full text-sky-600 px-12 py-2 inline-block font-semibold hover:text-white hover:bg-sky-600"
             }
           >
             Post!

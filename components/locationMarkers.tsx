@@ -24,7 +24,36 @@ const LocationMarkers: React.FC<MapComponentProps> = ({ markers = [], setMarkers
       {markers !== null && markers.length !== 0 ? (
         markers.map((post) => (
           <Marker key={post.postId} position={[post.latitude, post.longitude]}>
-            <Popup>{post.address}</Popup>
+            <Popup>
+              <div className={"max-w-2xl"}>
+                <p className={"text-m"}>{post.constructionName === "" ? "Unknown" : post.constructionName}</p>
+                <div className={"flex-col"}>
+                  <p className={"text-xs"}>{post.address}</p>
+                  <p>{post.roadName}</p>
+                </div>
+                <div className={"flex-col"}>
+                  <p>{post.displayName}</p>
+                  <p>
+                    {post.postId !== "user" ? (
+                      new Date(
+                        Number(
+                          ((BigInt(
+                            new DataView(Buffer.from(post.postId.substring(0, 12), "base64").buffer).getUint32(0),
+                          ) <<
+                            32n) +
+                            BigInt(
+                              new DataView(Buffer.from(post.postId.substring(0, 12), "base64").buffer).getUint32(4),
+                            )) /
+                            1000n,
+                        ),
+                      ).toString()
+                    ) : (
+                      <div />
+                    )}
+                  </p>
+                </div>
+              </div>
+            </Popup>
           </Marker>
         ))
       ) : (
