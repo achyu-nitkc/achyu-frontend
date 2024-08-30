@@ -284,9 +284,10 @@ export default function Home() {
     });
     if (response.ok) {
       setSelected(false);
-      console.log("POST SUCCESS!");
+      setPosts((prevPost) => prevPost.filter((item) => item.postId !== selectedPost.postId));
+      console.log("DELETE SUCCESS!");
     } else {
-      console.log("ERROR @ POST");
+      console.log("ERROR @ DELETE");
     }
   };
 
