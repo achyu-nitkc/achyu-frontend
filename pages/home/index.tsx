@@ -347,6 +347,11 @@ export default function Home() {
               {selectedPost.postId !== "user" ? (
                 <div className={"flex-col"}>
                   <p className={"m-2"}>{selectedPost.content}</p>
+                  {selectedPost.imageUrl.includes("edited-") ? (
+                    <p className={"text-red-500"}>この画像は加工された可能性があります.</p>
+                  ) : (
+                    <p></p>
+                  )}
                   {selectedPost.imageUrl !== "" ? (
                     <Image
                       width={320}
