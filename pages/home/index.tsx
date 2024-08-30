@@ -208,6 +208,7 @@ export default function Home() {
       if (response2.ok) {
         console.log("POST SUCCESS!");
         setIsVisible(false);
+        await getData();
       } else {
         console.log("ERROR @ POST");
       }
@@ -229,6 +230,8 @@ export default function Home() {
       });
       if (response.ok) {
         console.log("POST SUCCESS!");
+        setIsVisible(false);
+        await getData();
       } else {
         console.log("ERROR @ POST");
       }
@@ -317,7 +320,7 @@ export default function Home() {
               </p>
               <div className={"flex-col p-2"}>
                 <p className={"text-xs"}>{selectedPost.address}</p>
-                <p>{selectedPost.roadName}</p>
+                <p className={"text-xs"}>{selectedPost.roadName}</p>
               </div>
               <div className={"flex-col p-2 border-b-2 border-b-sky-600"}>
                 <p className={"text-xs"}>
@@ -387,7 +390,7 @@ export default function Home() {
                   <p className={"text-m"}>{post.constructionName === "" ? "Unknown" : post.constructionName}</p>
                   <div className={"flex-col"}>
                     <p className={"text-xs"}>{post.address}</p>
-                    <p>{post.roadName}</p>
+                    <p className={"text-xs"}>{post.roadName}</p>
                   </div>
                 </div>
               ))
