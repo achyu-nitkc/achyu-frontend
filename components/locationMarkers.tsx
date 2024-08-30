@@ -56,6 +56,11 @@ const LocationMarkers: React.FC<MapComponentProps> = ({ markers = [], setMarkers
                 {post.postId !== "user" ? (
                   <div className={"flex-col"}>
                     <p>{post.content}</p>
+                    {post.imageUrl.includes("edited-") ? (
+                      <p className={"text-red-500"}>この画像は加工された可能性があります.</p>
+                    ) : (
+                      <p></p>
+                    )}
                     {post.imageUrl !== "" ? (
                       <Image
                         width={320}
