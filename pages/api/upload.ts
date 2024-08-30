@@ -27,7 +27,8 @@ export default async function handler(req: NextApiRequest | File | Date, res: Ne
     }
     const nowDate: string = new Date().toISOString();
     const encodeFilename = Buffer.from(file.name, "utf-8").toString("base64");
-    const newPath = path.join(process.cwd(), "public/images", nowDate + encodeFilename);
+    const fileExtension = path.extname(file.name);
+    const newPath = path.join(process.cwd(), "public/images", nowDate + encodeFilename + fileExtension);
     fs.rename(file.path, newPath, (err) => {
       if (err) {
         res.status(500).json({
@@ -35,7 +36,7 @@ export default async function handler(req: NextApiRequest | File | Date, res: Ne
         });
       }
       res.status(200).json({
-        message: nowDate + encodeFilename,
+        message: "mod-" + nowDate + encodeFilename + fileExtension,
       });
     });
   });
